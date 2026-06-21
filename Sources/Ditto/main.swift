@@ -32,6 +32,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Set activation policy to regular so it shows up in the Dock
         NSApp.setActivationPolicy(.regular)
         
+        // Load and set custom Dock icon
+        let fm = FileManager.default
+        let currentDirIcon = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("icon.jpg")
+        if let iconImage = NSImage(contentsOf: currentDirIcon) {
+            NSApp.applicationIconImage = iconImage
+        } else if let iconImage = NSImage(contentsOfFile: "/Users/artem/Desktop/projects/Ditto/icon.jpg") {
+            NSApp.applicationIconImage = iconImage
+        }
+        
         // Setup status bar item (tray icon)
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem?.button {
