@@ -35,7 +35,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Load and set custom Dock icon
         let fm = FileManager.default
         let currentDirIcon = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("icon.jpg")
-        if let iconImage = NSImage(contentsOf: currentDirIcon) {
+        if let bundlePath = Bundle.main.path(forResource: "icon", ofType: "jpg"),
+           let iconImage = NSImage(contentsOfFile: bundlePath) {
+            NSApp.applicationIconImage = iconImage
+        } else if let iconImage = NSImage(contentsOf: currentDirIcon) {
             NSApp.applicationIconImage = iconImage
         } else if let iconImage = NSImage(contentsOfFile: "/Users/artem/Desktop/projects/Ditto/icon.jpg") {
             NSApp.applicationIconImage = iconImage
