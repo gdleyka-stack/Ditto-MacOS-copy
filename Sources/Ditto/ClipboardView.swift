@@ -268,6 +268,7 @@ struct ClipboardItemCell: View {
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: 80, height: 48)
+                        .clipped() // Fix image overflow outside cell frame
                         .clipShape(RoundedRectangle(cornerRadius: 4))
                         .overlay(
                             RoundedRectangle(cornerRadius: 4)
@@ -365,6 +366,7 @@ struct ClipboardItemCell: View {
 
 enum ClipboardFilter: String, CaseIterable {
     case all = "All"
+    case favorites = "Favorites"
     case text = "Text"
     case images = "Images"
 }
@@ -383,6 +385,8 @@ struct ClipboardView: View {
         switch selectedFilter {
         case .all:
             baseItems = manager.items
+        case .favorites:
+            baseItems = manager.items.filter { $0.isPinned ?? false }
         case .text:
             baseItems = manager.items.filter { $0.type == .text }
         case .images:
