@@ -27,6 +27,28 @@ extension NSImage {
     }
 }
 
+// Helper class to monitor and intercept keyboard events locally
+class KeyMonitor {
+    private var monitor: Any?
+
+    func start(onKeyDown: @escaping (NSEvent) -> Bool) {
+        stop()
+        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            if onKeyDown(event) {
+                return nil // Event handled, do not propagate
+            }
+            return event
+        }
+    }
+
+    func stop() {
+        if let monitor = monitor {
+            NSEvent.removeMonitor(monitor)
+            self.monitor = nil
+        }
+    }
+}
+
 // Clipboard Monitor Service
 class ClipboardManager: ObservableObject {
     @Published var items: [ClipboardItem] = []
@@ -215,6 +237,8 @@ struct VisualEffectView: NSViewRepresentable {
 struct ClipboardItemCell: View {
     let item: ClipboardItem
     let imageURL: URL?
+    let isSelected: Bool
+    let onHoverChanged: (Bool) -> Void
     let onCopy: () -> Void
     let onDelete: () -> Void
     let onTogglePin: () -> Void
@@ -274,7 +298,7 @@ struct ClipboardItemCell: View {
             
             Spacer()
             
-            if isHovered || (item.isPinned ?? false) {
+            if isHovered || isSelected || (item.isPinned ?? false) {
                 HStack(spacing: 10) {
                     Button(action: onTogglePin) {
                         Image(systemName: (item.isPinned ?? false) ? "star.fill" : "star")
@@ -289,7 +313,7 @@ struct ClipboardItemCell: View {
                     }
                     .help((item.isPinned ?? false) ? "Unpin" : "Pin")
 
-                    if isHovered {
+                    if isHovered || isSelected {
                         Button(action: onCopy) {
                             Image(systemName: "doc.on.doc")
                                 .font(.system(size: 11, weight: .regular))
@@ -324,13 +348,17 @@ struct ClipboardItemCell: View {
         .padding(.vertical, 7)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(isHovered ? Color.primary.opacity(0.04) : Color.clear)
+                .fill(isSelected || isHovered ? Color.primary.opacity(0.04) : Color.clear)
         )
         .contentShape(Rectangle())
         .onHover { hover in
             withAnimation(.easeInOut(duration: 0.15)) {
                 isHovered = hover
             }
+            onHoverChanged(hover)
+        }
+        .onTapGesture(count: 2) {
+            onCopy()
         }
     }
 }
@@ -346,6 +374,9 @@ struct ClipboardView: View {
     @ObservedObject var manager: ClipboardManager
     @State private var selectedFilter: ClipboardFilter = .all
     @State private var searchQuery: String = ""
+    
+    @State private var selectedIndex: Int = 0
+    @State private var keyMonitor = KeyMonitor()
     
     var filteredItems: [ClipboardItem] {
         let baseItems: [ClipboardItem]
@@ -428,6 +459,7 @@ struct ClipboardView: View {
             // Filter Pills
             HStack(spacing: 6) {
                 ForEach(ClipboardFilter.allCases, id: \.self) { filter in
+                    let isSelected = selectedFilter == filter
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.15)) {
                             selectedFilter = filter
@@ -437,11 +469,9 @@ struct ClipboardView: View {
                             .font(.system(.caption, design: .rounded))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(selectedFilter == filter ? Color.primary.opacity(0.08) : Color.clear)
-                            )
-                            .foregroundColor(selectedFilter == filter ? .primary : .secondary)
+                            .background(isSelected ? Color.primary.opacity(0.08) : Color.clear)
+                            .clipShape(Capsule())
+                            .foregroundColor(isSelected ? .primary : .secondary)
                     }
                     .buttonStyle(.plain)
                 }
@@ -466,30 +496,99 @@ struct ClipboardView: View {
                 }
                 .frame(maxHeight: .infinity)
             } else {
-                ScrollView {
-                    LazyVStack(spacing: 4) {
-                        ForEach(filteredItems) { item in
-                            ClipboardItemCell(
-                                item: item,
-                                imageURL: item.type == .image && item.imagePath != nil ? manager.imageURL(for: item.imagePath!) : nil,
-                                onCopy: {
-                                    manager.copyToClipboard(item)
-                                },
-                                onDelete: {
-                                    manager.deleteItem(item)
-                                },
-                                onTogglePin: {
-                                    manager.togglePin(for: item)
-                                }
-                            )
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack(spacing: 4) {
+                            ForEach(Array(filteredItems.enumerated()), id: \.element.id) { index, item in
+                                let imageUrl = (item.type == .image && item.imagePath != nil) ? manager.imageURL(for: item.imagePath!) : nil
+                                ClipboardItemCell(
+                                    item: item,
+                                    imageURL: imageUrl,
+                                    isSelected: selectedIndex == index,
+                                    onHoverChanged: { hovered in
+                                        if hovered {
+                                            selectedIndex = index
+                                        }
+                                    },
+                                    onCopy: {
+                                        manager.copyToClipboard(item)
+                                        dismissWindow()
+                                    },
+                                    onDelete: {
+                                        manager.deleteItem(item)
+                                    },
+                                    onTogglePin: {
+                                        manager.togglePin(for: item)
+                                    }
+                                )
+                                .id(item.id)
+                            }
+                        }
+                        .padding(8)
+                    }
+                    .onChange(of: selectedIndex) { newIndex in
+                        let count = filteredItems.count
+                        if newIndex >= 0 && newIndex < count {
+                            let itemId = filteredItems[newIndex].id
+                            scrollToItem(id: itemId, proxy: proxy)
                         }
                     }
-                    .padding(8)
                 }
             }
         }
         .frame(width: 320, height: 400)
         .background(VisualEffectView())
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .onChange(of: filteredItems) { _ in
+            selectedIndex = 0
+        }
+        .onAppear {
+            keyMonitor.start { event in
+                handleKeyDown(event)
+            }
+        }
+        .onDisappear {
+            keyMonitor.stop()
+        }
+    }
+    
+    private func scrollToItem(id: UUID, proxy: ScrollViewProxy) {
+        proxy.scrollTo(id)
+    }
+    
+    private func handleKeyDown(_ event: NSEvent) -> Bool {
+        let itemsCount = filteredItems.count
+        guard itemsCount > 0 else { return false }
+        
+        switch event.keyCode {
+        case 125: // Down Arrow
+            withAnimation(.easeInOut(duration: 0.1)) {
+                selectedIndex = min(selectedIndex + 1, itemsCount - 1)
+            }
+            return true
+            
+        case 126: // Up Arrow
+            withAnimation(.easeInOut(duration: 0.1)) {
+                selectedIndex = max(selectedIndex - 1, 0)
+            }
+            return true
+            
+        case 36: // Return
+            let item = filteredItems[selectedIndex]
+            manager.copyToClipboard(item)
+            dismissWindow()
+            return true
+            
+        case 53: // Escape
+            dismissWindow()
+            return true
+            
+        default:
+            return false
+        }
+    }
+    
+    private func dismissWindow() {
+        NSApp.keyWindow?.orderOut(nil)
     }
 }
