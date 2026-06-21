@@ -1,0 +1,81 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "Ditto-arm64-apple-macosx-debug.exe": ["<Ditto-arm64-apple-macosx-debug.exe>"]
+  "Ditto-arm64-apple-macosx-debug.module": ["<Ditto-arm64-apple-macosx-debug.module>"]
+  "PackageStructure": ["<PackageStructure>"]
+  "main": ["<Ditto-arm64-apple-macosx-debug.exe>","<Ditto-arm64-apple-macosx-debug.module>"]
+  "test": ["<Ditto-arm64-apple-macosx-debug.exe>","<Ditto-arm64-apple-macosx-debug.module>"]
+default: "main"
+nodes:
+  "/Users/artem/Desktop/projects/Ditto/Sources/Ditto/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+  "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto":
+    is-mutated: true
+commands:
+  "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto-entitlement.plist":
+    tool: write-auxiliary-file
+    inputs: ["<entitlement-plist>","<com.apple.security.get-task-allow>"]
+    outputs: ["/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto-entitlement.plist"]
+    description: "Write auxiliary file /Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto-entitlement.plist"
+
+  "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/artem/Desktop/projects/Ditto/Sources/Ditto/ClipboardView.swift","/Users/artem/Desktop/projects/Ditto/Sources/Ditto/main.swift"]
+    outputs: ["/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/sources"]
+    description: "Write auxiliary file /Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/sources"
+
+  "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.product/Objects.LinkFileList":
+    tool: write-auxiliary-file
+    inputs: ["<link-file-list>","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/ClipboardView.swift.o","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/main.swift.o"]
+    outputs: ["/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.product/Objects.LinkFileList"]
+    description: "Write auxiliary file /Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.product/Objects.LinkFileList"
+
+  "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Library/Developer/CommandLineTools/usr/bin/swiftc"]
+    outputs: ["/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"
+
+  "<Ditto-arm64-apple-macosx-debug.exe>":
+    tool: phony
+    inputs: ["<Ditto-arm64-apple-macosx-debug.exe-CodeSigning>"]
+    outputs: ["<Ditto-arm64-apple-macosx-debug.exe>"]
+
+  "<Ditto-arm64-apple-macosx-debug.module>":
+    tool: phony
+    inputs: ["/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/ClipboardView.swift.o","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/main.swift.o","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Modules/Ditto.swiftmodule"]
+    outputs: ["<Ditto-arm64-apple-macosx-debug.module>"]
+
+  "C.Ditto-arm64-apple-macosx-debug.exe":
+    tool: shell
+    inputs: ["/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/ClipboardView.swift.o","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/main.swift.o","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.product/Objects.LinkFileList"]
+    outputs: ["/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto"]
+    description: "Linking ./.build/arm64-apple-macosx/debug/Ditto"
+    args: ["/Library/Developer/CommandLineTools/usr/bin/swiftc","-L","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug","-o","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto","-module-name","Ditto","-Xlinker","-no_warn_duplicate_libraries","-emit-executable","-Xlinker","-alias","-Xlinker","_Ditto_main","-Xlinker","_main","-Xlinker","-rpath","-Xlinker","@loader_path","@/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.product/Objects.LinkFileList","-Xlinker","-rpath","-Xlinker","/Library/Developer/CommandLineTools/usr/lib/swift-6.2/macosx","-target","arm64-apple-macosx13.0","-Xlinker","-add_ast_path","-Xlinker","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Modules/Ditto.swiftmodule","-I","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-L","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-plugin-path","/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing","-sdk","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-g"]
+
+  "C.Ditto-arm64-apple-macosx-debug.exe-entitlements":
+    tool: shell
+    inputs: ["/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto-entitlement.plist"]
+    outputs: ["<Ditto-arm64-apple-macosx-debug.exe-CodeSigning>"]
+    description: "Applying debug entitlements to ./.build/arm64-apple-macosx/debug/Ditto"
+    args: ["codesign","--force","--sign","-","--entitlements","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto-entitlement.plist","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto"]
+
+  "C.Ditto-arm64-apple-macosx-debug.module":
+    tool: shell
+    inputs: ["/Users/artem/Desktop/projects/Ditto/Sources/Ditto/ClipboardView.swift","/Users/artem/Desktop/projects/Ditto/Sources/Ditto/main.swift","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/sources"]
+    outputs: ["/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/ClipboardView.swift.o","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/main.swift.o","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Modules/Ditto.swiftmodule"]
+    description: "Compiling Swift Module 'Ditto' (2 sources)"
+    args: ["/Library/Developer/CommandLineTools/usr/bin/swiftc","-module-name","Ditto","-emit-dependencies","-emit-module","-emit-module-path","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Modules/Ditto.swiftmodule","-output-file-map","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/output-file-map.json","-incremental","-c","@/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/sources","-I","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx13.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j10","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-Xfrontend","-entry-point-function-name","-Xfrontend","Ditto_main","-swift-version","5","-I","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-L","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-plugin-path","/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing","-sdk","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-g","-Xcc","-isysroot","-Xcc","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-Xcc","-fPIC","-Xcc","-g","-package-name","ditto"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Users/artem/Desktop/projects/Ditto/Sources/Ditto/","/Users/artem/Desktop/projects/Ditto/Package.swift","/Users/artem/Desktop/projects/Ditto/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+

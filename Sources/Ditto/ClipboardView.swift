@@ -256,25 +256,57 @@ struct ClipboardItemCell: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                if item.type == .text, let text = item.text {
+            if item.type == .image, let url = imageURL, let nsImage = NSImage(contentsOfFile: url.path) {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 48, height: 32)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 3))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 3)
+                            .stroke(Color.primary.opacity(0.06), lineWidth: 1)
+                    )
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Image")
+                        .font(.system(.body, design: .rounded))
+                        .foregroundColor(.primary.opacity(0.85))
+                    
+                    HStack(spacing: 6) {
+                        Text(timeString)
+                            .font(.system(.caption2, design: .rounded))
+                            .foregroundColor(.secondary.opacity(0.8))
+                        
+                        if item.isPinned ?? false {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 8))
+                                .foregroundColor(.orange)
+                        }
+                    }
+                }
+            } else if item.type == .text, let text = item.text {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(text)
                         .font(.system(.body, design: .rounded))
                         .foregroundColor(.primary.opacity(0.85))
                         .lineLimit(1)
                         .multilineTextAlignment(.leading)
-                } else if item.type == .image, let url = imageURL, let nsImage = NSImage(contentsOfFile: url.path) {
-                    Image(nsImage: nsImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 80, height: 48)
-                        .clipped() // Fix image overflow outside cell frame
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                        )
-                } else {
+                    
+                    HStack(spacing: 6) {
+                        Text(timeString)
+                            .font(.system(.caption2, design: .rounded))
+                            .foregroundColor(.secondary.opacity(0.8))
+                        
+                        if item.isPinned ?? false {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 8))
+                                .foregroundColor(.orange)
+                        }
+                    }
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Image(systemName: "photo")
                             .foregroundColor(.secondary)
@@ -282,18 +314,10 @@ struct ClipboardItemCell: View {
                             .font(.system(.body, design: .rounded))
                             .foregroundColor(.secondary)
                     }
-                }
-                
-                HStack(spacing: 6) {
+                    
                     Text(timeString)
                         .font(.system(.caption2, design: .rounded))
                         .foregroundColor(.secondary.opacity(0.8))
-                    
-                    if item.isPinned ?? false {
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 8))
-                            .foregroundColor(.orange)
-                    }
                 }
             }
             

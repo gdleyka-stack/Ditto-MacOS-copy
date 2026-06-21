@@ -1,0 +1,19 @@
+{
+  "": {
+    "swift-dependencies": "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/primary.swiftdeps"
+  },
+  "/Users/artem/Desktop/projects/Ditto/Sources/Ditto/ClipboardView.swift": {
+    "dependencies": "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/ClipboardView.d",
+    "object": "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/ClipboardView.swift.o",
+    "swiftmodule": "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/ClipboardView~partial.swiftmodule",
+    "swift-dependencies": "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/ClipboardView.swiftdeps",
+    "diagnostics": "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/ClipboardView.dia"
+  },
+  "/Users/artem/Desktop/projects/Ditto/Sources/Ditto/main.swift": {
+    "dependencies": "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/main.d",
+    "object": "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/main.swift.o",
+    "swiftmodule": "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/main.swiftdeps",
+    "diagnostics": "/Users/artem/Desktop/projects/Ditto/.build/arm64-apple-macosx/debug/Ditto.build/main.dia"
+  }
+}
