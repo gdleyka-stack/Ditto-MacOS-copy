@@ -23,6 +23,35 @@ class FloatingPanel: NSWindow {
     }
 }
 
+extension NSImage {
+    func rounded(cornerRadius: CGFloat) -> NSImage {
+        let targetSize = self.size
+        let newImage = NSImage(size: targetSize)
+        newImage.lockFocus()
+        
+        // Ensure transparent canvas
+        NSColor.clear.set()
+        NSRect(origin: .zero, size: targetSize).fill()
+        
+        let path = NSBezierPath(
+            roundedRect: NSRect(origin: .zero, size: targetSize),
+            xRadius: cornerRadius,
+            yRadius: cornerRadius
+        )
+        path.addClip()
+        
+        self.draw(
+            in: NSRect(origin: .zero, size: targetSize),
+            from: NSRect(origin: .zero, size: targetSize),
+            operation: .copy,
+            fraction: 1.0
+        )
+        
+        newImage.unlockFocus()
+        return newImage
+    }
+}
+
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
     var window: FloatingPanel?
@@ -32,16 +61,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Set activation policy to regular so it shows up in the Dock
         NSApp.setActivationPolicy(.regular)
         
-        // Load and set custom Dock icon
+        // Load and set custom Dock icon with rounded corners (macOS style)
         let fm = FileManager.default
         let currentDirIcon = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("icon.jpg")
+        
         if let bundlePath = Bundle.main.path(forResource: "icon", ofType: "jpg"),
            let iconImage = NSImage(contentsOfFile: bundlePath) {
-            NSApp.applicationIconImage = iconImage
+            let roundedIcon = iconImage.rounded(cornerRadius: iconImage.size.width * 0.2)
+            NSApp.applicationIconImage = roundedIcon
         } else if let iconImage = NSImage(contentsOf: currentDirIcon) {
-            NSApp.applicationIconImage = iconImage
+            let roundedIcon = iconImage.rounded(cornerRadius: iconImage.size.width * 0.2)
+            NSApp.applicationIconImage = roundedIcon
         } else if let iconImage = NSImage(contentsOfFile: "/Users/artem/Desktop/projects/Ditto/icon.jpg") {
-            NSApp.applicationIconImage = iconImage
+            let roundedIcon = iconImage.rounded(cornerRadius: iconImage.size.width * 0.2)
+            NSApp.applicationIconImage = roundedIcon
         }
         
         // Setup status bar item (tray icon)
