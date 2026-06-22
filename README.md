@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="icon_ditto.png" width="128" height="128" alt="Ditto Logo">
+</p>
+
 # Ditto
 
 Ditto is a lightweight, minimalist clipboard manager for macOS built using Swift and SwiftUI. It runs as a status bar application and keeps track of your copied text and images.
@@ -36,7 +40,7 @@ mkdir -p Ditto.app/Contents/Resources
 2. Copy the binary and assets:
 ```bash
 cp .build/release/Ditto Ditto.app/Contents/MacOS/Ditto
-cp icon.jpg Ditto.app/Contents/Resources/icon.jpg
+cp icon_ditto.png Ditto.app/Contents/Resources/icon_ditto.png
 ```
 
 3. Configure Info.plist under `Ditto.app/Contents/Info.plist`.

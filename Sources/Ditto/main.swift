@@ -63,18 +63,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Load and set custom Dock icon with rounded corners (macOS style)
         let fm = FileManager.default
-        let currentDirIcon = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("icon.jpg")
+        let pathsAndNames: [(URL?, String, String)] = [
+            (Bundle.main.url(forResource: "icon_ditto", withExtension: "png"), "icon_ditto", "png"),
+            (Bundle.main.url(forResource: "icon", withExtension: "png"), "icon", "png"),
+            (Bundle.main.url(forResource: "icon", withExtension: "jpg"), "icon", "jpg"),
+            (URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("icon_ditto.png"), "icon_ditto", "png"),
+            (URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("icon.png"), "icon", "png"),
+            (URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("icon.jpg"), "icon", "jpg"),
+            (URL(fileURLWithPath: "/Users/artem/Desktop/projects/Ditto/icon_ditto.png"), "icon_ditto", "png"),
+            (URL(fileURLWithPath: "/Users/artem/Desktop/projects/Ditto/icon.png"), "icon", "png"),
+            (URL(fileURLWithPath: "/Users/artem/Desktop/projects/Ditto/icon.jpg"), "icon", "jpg")
+        ]
         
-        if let bundlePath = Bundle.main.path(forResource: "icon", ofType: "jpg"),
-           let iconImage = NSImage(contentsOfFile: bundlePath) {
-            let roundedIcon = iconImage.rounded(cornerRadius: iconImage.size.width * 0.2)
-            NSApp.applicationIconImage = roundedIcon
-        } else if let iconImage = NSImage(contentsOf: currentDirIcon) {
-            let roundedIcon = iconImage.rounded(cornerRadius: iconImage.size.width * 0.2)
-            NSApp.applicationIconImage = roundedIcon
-        } else if let iconImage = NSImage(contentsOfFile: "/Users/artem/Desktop/projects/Ditto/icon.jpg") {
-            let roundedIcon = iconImage.rounded(cornerRadius: iconImage.size.width * 0.2)
-            NSApp.applicationIconImage = roundedIcon
+        for (url, _, _) in pathsAndNames {
+            if let url = url, fm.fileExists(atPath: url.path), let iconImage = NSImage(contentsOf: url) {
+                let roundedIcon = iconImage.rounded(cornerRadius: iconImage.size.width * 0.2)
+                NSApp.applicationIconImage = roundedIcon
+                break
+            }
         }
         
         // Setup status bar item (tray icon)
